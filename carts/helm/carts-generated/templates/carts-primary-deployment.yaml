@@ -1,0 +1,73 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  creationTimestamp: null
+  name: carts-primary
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: carts-primary
+  strategy:
+    rollingUpdate:
+      maxUnavailable: 0
+    type: RollingUpdate
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        app: carts-primary
+    spec:
+      containers:
+      - env:
+        - name: DT_CUSTOM_PROP
+          value: keptn_project=sockshop keptn_service=carts keptn_stage=staging keptn_deployment=primary
+        - name: POD_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.name
+        - name: DEPLOYMENT_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.labels['deployment']
+        - name: CONTAINER_IMAGE
+          value: docker.io/keptnexamples/carts:0.10.1
+        - name: KEPTN_PROJECT
+          value: carts
+        - name: KEPTN_STAGE
+          valueFrom:
+            fieldRef:
+              fieldPath: metadata.namespace
+        - name: KEPTN_SERVICE
+          value: carts
+        - name: UNLEASH_SERVER_URL
+          value: http://unleash.unleash-dev/api
+        image: docker.io/keptnexamples/carts:0.10.1
+        imagePullPolicy: IfNotPresent
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 15
+        name: carts
+        ports:
+        - containerPort: 8080
+          name: http
+          protocol: TCP
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 60
+          periodSeconds: 10
+          timeoutSeconds: 15
+        resources:
+          limits:
+            cpu: "1"
+            memory: 2Gi
+          requests:
+            cpu: 500m
+            memory: 1Gi
+status: {}
